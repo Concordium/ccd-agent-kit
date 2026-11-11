@@ -1,0 +1,6 @@
+{
+  "name": "skills/signer",
+  "root": "packages/ccd-signer/src/mcp/skills/assets/signer",
+  "projectType": "library",
+  "targets": {}
+}

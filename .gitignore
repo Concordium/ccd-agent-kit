@@ -1,0 +1,46 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+.release/
+*.tsbuildinfo
+
+# Test and coverage output
+coverage/
+.vitest/
+.test-tmp/
+
+# Nx and tool caches
+.nx/
+.turbo/
+.eslintcache
+
+# Package manager artifacts
+.pnpm-store/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment and local secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+logs/
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# Local CCD Agent Kit state
+.ccd-agent-kit/
+opencode.json

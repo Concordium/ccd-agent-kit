@@ -1,0 +1,55 @@
+{
+  "name": "@ccd-agent-kit/ccd-signer",
+  "nx": {
+    "name": "ccd-signer",
+    "implicitDependencies": [
+      "skills/signer"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "Apache-2.0",
+  "version": "0.0.0",
+  "description": "CLI and MCP tooling for describing and signing CCD transactions.",
+  "bin": {
+    "ccd-signer": "./dist/bin/ccd-signer.js",
+    "ccd-signer-mcp": "./dist/bin/ccd-signer-mcp.js"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=22.23.4"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json && node ../../scripts/copy-package-assets.mjs . src/mcp/skills/assets/signer dist/mcp/skills/assets/signer .md && node ../../scripts/copy-package-assets.mjs . src/mcp/skills/assets/signer dist/mcp/skills/assets/signer .json && node -e \"require('node:fs').rmSync('dist/mcp/skills/assets/signer/project.json', { force: true })\" && node ../../scripts/chmod-bins.mjs dist/bin/ccd-signer.js dist/bin/ccd-signer-mcp.js",
+    "ci:test": "pnpm test",
+    "lint": "eslint .",
+    "test": "pnpm test:unit && pnpm test:integration",
+    "test:unit": "vitest run --coverage",
+    "test:integration": "vitest run --config vitest.integration.config.ts --passWithNoTests",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@ccd-agent-kit/cli-utils": "workspace:*",
+    "@ccd-agent-kit/config-utils": "workspace:*",
+    "@ccd-agent-kit/mcp-skills": "workspace:*",
+    "@ccd-agent-kit/mcp-utils": "workspace:*",
+    "@ccd-agent-kit/piv-utils": "workspace:*",
+    "@ccd-agent-kit/sdk-utils": "workspace:*",
+    "@concordium/web-sdk": "13.0.0-alpha.2",
+    "@grpc/grpc-js": "^1.14.4",
+    "@modelcontextprotocol/server": "^2.4.0",
+    "@noble/ed25519": "^2.3.0",
+    "commander": "^15.1.0",
+    "zod": "^4.6.7"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Concordium/ccd-agent-kit.git",
+    "directory": "packages/ccd-signer"
+  },
+  "bugs": {
+    "url": "https://github.com/Concordium/ccd-agent-kit/issues"
+  },
+  "homepage": "https://github.com/Concordium/ccd-agent-kit#readme"
+}

@@ -1,0 +1,55 @@
+{
+  "name": "@ccd-agent-kit/ccd-id-manager",
+  "nx": {
+    "name": "ccd-id-manager",
+    "implicitDependencies": [
+      "skills/id-manager"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "Apache-2.0",
+  "version": "0.0.0",
+  "description": "Concordium identity manager CLI and MCP tool.",
+  "type": "module",
+  "bin": {
+    "ccd-id-manager": "./dist/bin/ccd-id-manager.js",
+    "ccd-id-manager-mcp": "./dist/bin/ccd-id-manager-mcp.js"
+  },
+  "engines": {
+    "node": ">=22.23.4"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json && node ../../scripts/copy-package-assets.mjs . src/mcp/skills/assets/id-manager dist/mcp/skills/assets/id-manager .md && node ../../scripts/copy-package-assets.mjs . src/mcp/skills/assets/id-manager dist/mcp/skills/assets/id-manager .json && node -e \"require('node:fs').rmSync('dist/mcp/skills/assets/id-manager/project.json', { force: true })\" && node ../../scripts/chmod-bins.mjs dist/bin/ccd-id-manager.js dist/bin/ccd-id-manager-mcp.js",
+    "lint": "eslint .",
+    "test": "pnpm test:unit && pnpm test:integration",
+    "test:unit": "vitest run --coverage",
+    "test:integration": "vitest run --config vitest.integration.config.ts --passWithNoTests",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@ccd-agent-kit/cli-utils": "workspace:*",
+    "@ccd-agent-kit/config-utils": "workspace:*",
+    "@ccd-agent-kit/mcp-utils": "workspace:*",
+    "@ccd-agent-kit/piv-utils": "workspace:*",
+    "@ccd-agent-kit/sdk-utils": "workspace:*",
+    "@concordium/web-sdk": "13.0.0-alpha.2",
+    "@modelcontextprotocol/server": "^2.4.0",
+    "@noble/curves": "1.9.7",
+    "commander": "^15.1.0",
+    "zod": "^4.6.7"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Concordium/ccd-agent-kit.git",
+    "directory": "packages/ccd-id-manager"
+  },
+  "bugs": {
+    "url": "https://github.com/Concordium/ccd-agent-kit/issues"
+  },
+  "homepage": "https://github.com/Concordium/ccd-agent-kit#readme"
+}

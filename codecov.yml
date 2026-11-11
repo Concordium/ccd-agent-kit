@@ -1,0 +1,30 @@
+coverage:
+  precision: 2
+  round: down
+  range: '70...100'
+
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 1%
+        if_ci_failed: error
+    patch:
+      default:
+        target: auto
+        threshold: 1%
+        if_ci_failed: error
+
+flag_management:
+  default_rules:
+    carryforward: true
+    statuses:
+      - type: project
+        target: auto
+        threshold: 1%
+
+comment:
+  layout: 'condensed_header,condensed_files,flags,condensed_footer'
+  show_carryforward_flags: true
+  behavior: default
+  require_changes: false

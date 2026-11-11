@@ -1,0 +1,59 @@
+{
+  "name": "@ccd-agent-kit/ccd-skills",
+  "nx": {
+    "name": "ccd-skills",
+    "implicitDependencies": [
+      "skills/chain-client",
+      "skills/signer",
+      "skills/id-manager",
+      "skills/shared"
+    ],
+    "targets": {
+      "build": {
+        "inputs": [
+          "default",
+          "^default",
+          "{workspaceRoot}/scripts/build-skills.mjs",
+          "{workspaceRoot}/scripts/lib/skill-assets.mjs"
+        ],
+        "outputs": [
+          "{projectRoot}/dist"
+        ]
+      },
+      "test": {
+        "inputs": [
+          "default",
+          "^default",
+          "{workspaceRoot}/scripts/build-skills.mjs",
+          "{workspaceRoot}/scripts/lib/skill-assets.mjs"
+        ]
+      }
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "Apache-2.0",
+  "version": "0.0.0",
+  "description": "Asset-only distribution of the Concordium MCP workflow skills.",
+  "type": "module",
+  "engines": {
+    "node": ">=22.23.4"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "node ../../scripts/build-skills.mjs",
+    "test": "node --test test/unit/*.test.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Concordium/ccd-agent-kit.git",
+    "directory": "packages/ccd-skills"
+  },
+  "bugs": {
+    "url": "https://github.com/Concordium/ccd-agent-kit/issues"
+  },
+  "homepage": "https://github.com/Concordium/ccd-agent-kit#readme"
+}

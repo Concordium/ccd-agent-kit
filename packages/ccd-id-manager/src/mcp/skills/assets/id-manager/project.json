@@ -1,0 +1,6 @@
+{
+  "name": "skills/id-manager",
+  "root": "packages/ccd-id-manager/src/mcp/skills/assets/id-manager",
+  "projectType": "library",
+  "targets": {}
+}

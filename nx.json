@@ -1,0 +1,65 @@
+{
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "affected": {
+    "defaultBase": "main"
+  },
+  "targetDefaults": {
+    "build": {
+      "dependsOn": ["^build"],
+      "cache": true
+    },
+    "typecheck": {
+      "dependsOn": ["^build", "^typecheck"],
+      "cache": true
+    },
+    "lint": {
+      "cache": true
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "inputs": ["default", "^default", "{workspaceRoot}/codecov.yml"],
+      "outputs": ["{projectRoot}/coverage"],
+      "cache": true
+    },
+    "test:unit": {
+      "dependsOn": ["^build"],
+      "inputs": ["default", "^default", "{workspaceRoot}/codecov.yml"],
+      "outputs": ["{projectRoot}/coverage"],
+      "cache": true
+    },
+    "test:integration": {
+      "dependsOn": ["^build"],
+      "inputs": ["default", "^default"],
+      "outputs": [],
+      "cache": true
+    },
+    "test:live": {
+      "cache": false
+    }
+  },
+  "release": {
+    "projects": ["packages/*"],
+    "projectsRelationship": "independent",
+    "releaseTag": {
+      "pattern": "{projectName}/v{version}",
+      "strictPreid": true
+    },
+    "version": {
+      "conventionalCommits": true,
+      "fallbackCurrentVersionResolver": "disk"
+    },
+    "git": {
+      "commit": false,
+      "tag": true,
+      "push": true
+    },
+    "changelog": {
+      "automaticFromRef": true,
+      "projectChangelogs": {
+        "createRelease": "github",
+        "file": false
+      }
+    }
+  },
+  "analytics": false
+}

@@ -1,0 +1,6 @@
+{
+  "name": "skills/shared",
+  "root": "packages/mcp-skills/src/assets/shared",
+  "projectType": "library",
+  "targets": {}
+}

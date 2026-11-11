@@ -1,0 +1,33 @@
+{
+  "name": "@ccd-agent-kit/cli-utils",
+  "license": "Apache-2.0",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Private shared CLI helpers for ccd-agent-kit command-line tools.",
+  "type": "module",
+  "nx": {
+    "name": "libs/cli-utils"
+  },
+  "engines": {
+    "node": ">=22.23.4"
+  },
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "lint": "eslint .",
+    "test": "pnpm test:unit && pnpm test:integration",
+    "test:unit": "vitest run --coverage",
+    "test:integration": "vitest run --config vitest.integration.config.ts --passWithNoTests",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "commander": "^15.1.0",
+    "zod": "^4.6.7"
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "name": "@ccd-agent-kit/ccd-chain-client",
+  "nx": {
+    "name": "ccd-chain-client",
+    "implicitDependencies": [
+      "skills/chain-client"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "Apache-2.0",
+  "version": "0.0.0",
+  "description": "MCP server for the CCD blockchain \u2014 read-only chain queries, contract invocation, and sign-ready transaction payload construction.",
+  "type": "module",
+  "engines": {
+    "node": ">=22.23.4"
+  },
+  "bin": {
+    "ccd-chain-client-mcp": "dist/bin/ccd-chain-client-mcp.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json && node ../../scripts/copy-package-assets.mjs . src/mcp/skills/assets/chain-client dist/mcp/skills/assets/chain-client .md && node ../../scripts/copy-package-assets.mjs . src/mcp/skills/assets/chain-client dist/mcp/skills/assets/chain-client .json && node -e \"require('node:fs').rmSync('dist/mcp/skills/assets/chain-client/project.json', { force: true })\" && node ../../scripts/chmod-bins.mjs dist/bin/ccd-chain-client-mcp.js",
+    "ci:test": "pnpm test",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "pnpm test:unit && pnpm test:integration",
+    "test:unit": "vitest run --coverage --passWithNoTests",
+    "test:integration": "vitest run --config vitest.integration.config.ts --passWithNoTests",
+    "test:live": "vitest run --config vitest.live.config.ts --passWithNoTests",
+    "test:watch": "vitest",
+    "start": "ccd-chain-client-mcp",
+    "inspector": "npx @modelcontextprotocol/inspector ccd-chain-client-mcp"
+  },
+  "dependencies": {
+    "@ccd-agent-kit/cli-utils": "workspace:*",
+    "@ccd-agent-kit/config-utils": "workspace:*",
+    "@ccd-agent-kit/mcp-skills": "workspace:*",
+    "@ccd-agent-kit/mcp-utils": "workspace:*",
+    "@ccd-agent-kit/sdk-utils": "workspace:*",
+    "@concordium/web-sdk": "13.0.0-alpha.2",
+    "@grpc/grpc-js": "^1.14.4",
+    "@modelcontextprotocol/node": "^2.1.0",
+    "@modelcontextprotocol/server": "^2.4.0",
+    "zod": "^4.6.7"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Concordium/ccd-agent-kit.git",
+    "directory": "packages/ccd-chain-client"
+  },
+  "bugs": {
+    "url": "https://github.com/Concordium/ccd-agent-kit/issues"
+  },
+  "homepage": "https://github.com/Concordium/ccd-agent-kit#readme"
+}

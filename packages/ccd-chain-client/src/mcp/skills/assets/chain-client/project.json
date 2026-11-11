@@ -1,0 +1,6 @@
+{
+  "name": "skills/chain-client",
+  "root": "packages/ccd-chain-client/src/mcp/skills/assets/chain-client",
+  "projectType": "library",
+  "targets": {}
+}
