@@ -72,8 +72,8 @@ importers:
         specifier: 13.0.0-alpha.2
         version: 13.0.0-alpha.2(@protobuf-ts/runtime-rpc@2.11.1)(cbor2@1.12.0)
       '@grpc/grpc-js':
-        specifier: ^1.14.4
-        version: 1.14.4
+        specifier: ^1.14.7
+        version: 1.14.7
       '@modelcontextprotocol/node':
         specifier: ^2.1.0
         version: 2.1.0(@modelcontextprotocol/server@2.4.0)(hono@4.13.7)
@@ -102,8 +102,8 @@ importers:
         specifier: 13.0.0-alpha.2
         version: 13.0.0-alpha.2(@protobuf-ts/runtime-rpc@2.11.1)(cbor2@1.12.0)
       '@grpc/grpc-js':
-        specifier: ^1.14.4
-        version: 1.14.4
+        specifier: ^1.14.7
+        version: 1.14.7
       commander:
         specifier: ^15.1.0
         version: 15.1.0
@@ -172,8 +172,8 @@ importers:
         specifier: 13.0.0-alpha.2
         version: 13.0.0-alpha.2(@protobuf-ts/runtime-rpc@2.11.1)(cbor2@1.12.0)
       '@grpc/grpc-js':
-        specifier: ^1.14.4
-        version: 1.14.4
+        specifier: ^1.14.7
+        version: 1.14.7
       '@modelcontextprotocol/server':
         specifier: ^2.4.0
         version: 2.4.0
@@ -1112,8 +1112,8 @@ packages:
     resolution: {integrity: sha512-IkO+/KEUvwbVpiURZg+P7zF74z5Jxe0UgJxVni+RtoHQ6IZieXaO02kmadomap/q+l6bc/jdPGGqTjhuZnuz1Q==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
 
-  '@grpc/grpc-js@1.14.4':
-    resolution: {integrity: sha512-k9Dj3DV/itK9D06Y8f190Qgop7/Ui+D0njFV3LHMPwPT75DpXLQohE9Wmz0QElrJnzsjB7KPWiKJbOl7IPDArQ==}
+  '@grpc/grpc-js@1.14.7':
+    resolution: {integrity: sha512-W4W/fcBMGRVtG6dW2c7cw2mnpS3hvbBd+oQXjh2iYFTZDk1JJmcNqkM5KSaPubQpamlUUurrlb7G1s9NJeERmQ==}
     engines: {node: '>=12.10.0'}
 
   '@grpc/proto-loader@0.8.1':
@@ -3771,10 +3771,10 @@ snapshots:
   '@concordium/web-sdk@13.0.0-alpha.2(@protobuf-ts/runtime-rpc@2.11.1)(cbor2@1.12.0)':
     dependencies:
       '@concordium/rust-bindings': 4.0.1
-      '@grpc/grpc-js': 1.14.4
+      '@grpc/grpc-js': 1.14.7
       '@noble/ed25519': 2.3.0
       '@noble/hashes': 1.8.0
-      '@protobuf-ts/grpc-transport': 2.11.1(@grpc/grpc-js@1.14.4)
+      '@protobuf-ts/grpc-transport': 2.11.1(@grpc/grpc-js@1.14.7)
       '@protobuf-ts/grpcweb-transport': 2.11.1
       '@protobuf-ts/runtime-rpc': 2.11.1
       '@scure/bip39': 1.6.0
@@ -3923,7 +3923,7 @@ snapshots:
       '@eslint/core': 1.2.1
       levn: 0.4.1
 
-  '@grpc/grpc-js@1.14.4':
+  '@grpc/grpc-js@1.14.7':
     dependencies:
       '@grpc/proto-loader': 0.8.1
       '@js-sdsl/ordered-map': 4.4.2
@@ -4110,9 +4110,9 @@ snapshots:
       - '@swc-node/register'
       - '@swc/core'
 
-  '@protobuf-ts/grpc-transport@2.11.1(@grpc/grpc-js@1.14.4)':
+  '@protobuf-ts/grpc-transport@2.11.1(@grpc/grpc-js@1.14.7)':
     dependencies:
-      '@grpc/grpc-js': 1.14.4
+      '@grpc/grpc-js': 1.14.7
       '@protobuf-ts/runtime': 2.11.1
       '@protobuf-ts/runtime-rpc': 2.11.1
 
