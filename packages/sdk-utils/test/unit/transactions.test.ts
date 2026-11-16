@@ -308,7 +308,7 @@ describe('transaction hex helpers', () => {
     );
   });
 
-  it('assembles and finalizes a target-bound threshold-1 account-opening credential deployment', async () => {
+  it('preserves all identity-proof components with the account signature before the counter proof', async () => {
     const keys = await keyPair('a');
     const handoff = buildHandoff({
       credentialPublicKeys: { keys: { 0: { schemeId: 'Ed25519', verifyKey: keys.verifyKey } }, threshold: 1 },
@@ -316,9 +316,25 @@ describe('transaction hex helpers', () => {
     const signature = await signCredentialHandoff(handoff.credDeploymentHex, keys.signKey);
     const assembled = await assembleSignedCredentialDeployment(handoff.credDeploymentHex, { 0: signature });
     const finalized = await finalizeCredentialDeploymentHex(handoff.credDeploymentHex, { 0: signature });
+    const expectedProofs = [
+      SYNTHETIC_UNSIGNED_CDI.proofs.sig,
+      SYNTHETIC_UNSIGNED_CDI.proofs.commitments,
+      SYNTHETIC_UNSIGNED_CDI.proofs.challenge,
+      '00000002',
+      '00000001',
+      SYNTHETIC_UNSIGNED_CDI.proofs.proofIdCredPub[1],
+      '00000003',
+      SYNTHETIC_UNSIGNED_CDI.proofs.proofIdCredPub[3],
+      SYNTHETIC_UNSIGNED_CDI.proofs.proofIpSig,
+      SYNTHETIC_UNSIGNED_CDI.proofs.proofRegId,
+      '01',
+      '00',
+      signature,
+      SYNTHETIC_UNSIGNED_CDI.proofs.credCounterLessThanMaxAccounts,
+    ].join('');
     expect(assembled).toMatchObject({
       credentialPublicKeys: { keys: { 0: { schemeId: 'Ed25519', verifyKey: keys.verifyKey } }, threshold: 1 },
-      proofs: expect.stringContaining(signature),
+      proofs: expectedProofs,
     });
     expect(finalized).toMatchObject({
       blockItemKind: 'credentialDeployment',
@@ -473,7 +489,7 @@ describe('transaction hex helpers', () => {
     await expect(finalizeCredentialDeploymentHex(existing, { 0: signature })).rejects.toThrow(/account-opening/i);
   });
 
-  it('summarizes finalized credential deployment block items without decoding proof internals', async () => {
+  it('summarizes credential values and proof byte length without decoding proof internals', async () => {
     const keys = await keyPair('b');
     const handoff = buildHandoff({
       credentialPublicKeys: { keys: { 0: { schemeId: 'Ed25519', verifyKey: keys.verifyKey } }, threshold: 1 },
@@ -502,7 +518,7 @@ describe('transaction hex helpers', () => {
       expiry: '1790353687',
       kind: 'credentialDeployment',
       proofs: {
-        byteLength: 966,
+        byteLength: 1458,
       },
     });
   });
@@ -676,8 +692,8 @@ describe('transaction hex helpers', () => {
     await expect(finalizeCredentialDeploymentHex(handoff, signatures)).rejects.toThrow(error);
   });
 
-  it('rejects credential deployment handoffs without enough ownership proof bytes', async () => {
-    const shortProofHandoff = `00${MESSAGE_EXPIRY_HEX}${SYNTHETIC_CREDENTIAL_VALUES}${'bb'.repeat(96)}`;
+  it('rejects credential deployment handoffs containing only the account-counter proof', async () => {
+    const shortProofHandoff = `00${MESSAGE_EXPIRY_HEX}${SYNTHETIC_CREDENTIAL_VALUES}${'bb'.repeat(740)}`;
 
     await expect(finalizeCredentialDeploymentHex(shortProofHandoff, { 0: '11'.repeat(64) })).rejects.toThrow(
       'Credential deployment ownership proofs are too short.',

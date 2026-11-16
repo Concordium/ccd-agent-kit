@@ -148,6 +148,10 @@ the stable channel and `latest` is the npm dist-tag used only by manual publicat
 branch allowlist and channel file must remain synchronized. Pull requests cannot release; pushes to
 `main` release only after full verification succeeds.
 
+Same-repository PR checks reuse their checkout and install for a shared `runRelease` dry-run step.
+Target-commit `release-channels.json` gates the preview; one bot comment shows expected versions.
+Concurrency and a current-head check guard updates. Preview never tags, publishes, or pushes.
+
 Automatic release never publishes to npm. Manual npm publication is a distinct `workflow_dispatch`
 operation from `main` that targets one existing project release, verifies its checksum and package
 identity/version, and publishes that exact tarball without rebuilding or repacking. It uses npm
@@ -162,7 +166,7 @@ Changes to `main` are collaborator pull requests with rebase-only linear history
 stale-approval dismissal, resolved review threads, successful required verification, and no force
 push, branch deletion, or bypass. Required checks are repository verification plus CodeQL code
 scanning results, blocking High/Critical security alerts and Error-level code-quality alerts. Pull-request workflows
-use read-only permissions and no publishing OIDC; CodeQL receives only its scoped
+use read-only permissions except same-repository PR comment writing, and no publishing OIDC; CodeQL receives only its scoped
 `security-events: write` permission. Pull-request code does not run through `pull_request_target`.
 OIDC is reserved for the manual npm workflow. Repository Actions default to read-only permissions;
 secret scanning with push protection and Dependabot updates are enabled.

@@ -3,6 +3,15 @@
 Concordium CLI and MCP tools for operators and AI agents. Query the chain, build and sign
 transactions, manage identities, and follow guided workflows.
 
+| Contents                            |
+| ----------------------------------- |
+| [Public Packages](#public-packages) |
+| [Getting Started](#getting-started) |
+| [Skills](#skills)                   |
+| [Safety](#safety)                   |
+| [License](#license)                 |
+| [Development](#development)         |
+
 ## Public Packages
 
 | Package                                                                      | Use it for                                                                             |
@@ -13,24 +22,8 @@ transactions, manage identities, and follow guided workflows.
 | [`@ccd-agent-kit/ccd-id-manager`](packages/ccd-id-manager/README.md)         | Issue and recover identities, create proofs, and prepare account openings.             |
 | [`@ccd-agent-kit/ccd-skills`](packages/ccd-skills/README.md)                 | Add the packaged workflow skills to harnesses without MCP Skills extension support.    |
 
-| Contents                            |
-| ----------------------------------- |
-| [Public Packages](#public-packages) |
-| [Getting Started](#getting-started) |
-| [Skills](#skills)                   |
-| [Safety](#safety)                   |
-| [License](#license)                 |
-| [Development](#development)         |
-
 ## Getting Started
 
-Build from source by following [Development](#development). To install a published release instead,
-download the matching `.tgz` and `.tgz.sha256` assets from the project's
-[GitHub Release](https://github.com/Concordium/ccd-agent-kit/releases), verify the checksum, and follow
-[Installing Release Assets](docs/release.md#installing-release-assets). Packages are independently
-versioned. npm publication under the `latest` tag is a separate,
-manually approved operation described in the
-[release guide](docs/release.md#manual-npm-publication).
 
 Node.js `>=22.23.4` is required. Installing the config manager, signer, or identity manager also
 requires native build tools and the PC/SC development support used by `pcsclite`; this applies to
@@ -38,17 +31,27 @@ config-manager and signer installations even when you plan to use software keys 
 operations additionally require a working PC/SC service and supported device. The chain client
 does not use the native PC/SC stack.
 
-1. Install the config manager from its downloaded release asset:
+1. Install the independently versioned packages you need from their downloaded release assets.
+   For example, install the config manager when a workflow needs local provisioning:
 
    ```sh
    npm install --global ./ccd-config-manager-<VERSION>.tgz
    ```
 
-2. Use the [config-manager guide](packages/ccd-config-manager/README.md) to configure a network and
-   provision the storage, keys, or devices needed by your workflow.
-3. Install the independently versioned signer, chain-client, identity-manager, or skills assets
-   you need.
-4. Follow each package README for its quick start and CLI or MCP launch configuration.
+2. Follow each package README for its quick start and CLI or MCP launch configuration.
+
+Configuration needs differ by package:
+
+- `ccd-chain-client` works out of the box with built-in `mainnet` (the default) and `testnet`.
+- `ccd-signer` needs config-manager provisioning for a signing backend and key; existing accounts
+  also need refreshed finalized credentials. Follow [signer setup](packages/ccd-signer/README.md#setup).
+- `ccd-id-manager` needs a hardware identity root and trusted provider configuration. Follow
+  [identity-manager setup](packages/ccd-id-manager/README.md#setup).
+- `ccd-config-manager` is the management CLI and needs no separate bootstrap. Skills hold no
+  secrets, but their workflows depend on the corresponding configured tools.
+
+Both built-in networks need no `network add`. Custom networks are covered by the
+[config-manager guide](packages/ccd-config-manager/README.md).
 
 ## Skills
 
@@ -76,6 +79,9 @@ Licensed under the [Apache License 2.0](LICENSE). Release tarballs include the l
 
 ## Development
 
+We are not currently accepting external pull requests. We welcome
+[issues](https://github.com/Concordium/ccd-agent-kit/issues) suggesting fixes and enhancements.
+
 Use Node.js `>=22.23.4` and pnpm:
 
 ```sh
@@ -86,6 +92,15 @@ pnpm verify           # full typecheck, lint, build, tests, coverage, and smoke 
 pnpm build && pnpm package:tools  # package all five public tarballs into .release/
 ```
 
+To install a published release not yet promoted to npm,
+download the matching `.tgz` and `.tgz.sha256` assets from the project's
+[GitHub Release](https://github.com/Concordium/ccd-agent-kit/releases), verify the checksum, and follow
+[Installing Release Assets](docs/release.md#installing-release-assets). Packages are independently
+versioned. npm publication under the `latest` tag is a separate,
+manually approved operation described in the
+[release guide](docs/release.md#manual-npm-publication).
+
 Contributor references: [development](docs/development.md),
-[architecture](docs/architecture.md), [codebase flows](docs/codebase-flows.md), and
+[architecture](docs/architecture.md),
+[codebase flows](docs/codebase-flows.md),
 [release](docs/release.md).

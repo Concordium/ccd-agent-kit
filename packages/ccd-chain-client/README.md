@@ -6,16 +6,112 @@ never holds private keys, signs, or reads signer-managed private storage.
 
 | Contents                            |
 | ----------------------------------- |
-| [MCP tools](#mcp-tools)             |
-| [MCP resources](#mcp-resources)     |
 | [Installation](#installation)       |
 | [Setup](#setup)                     |
+| [MCP tools](#mcp-tools)             |
+| [MCP resources](#mcp-resources)     |
 | [Safe workflows](#safe-workflows)   |
 | [Troubleshooting](#troubleshooting) |
+| [License](#license)                 |
 
 See the canonical
 [chain-client architecture](https://github.com/Concordium/ccd-agent-kit/blob/main/docs/architecture.md#chain-client)
 and [security model](https://github.com/Concordium/ccd-agent-kit/blob/main/docs/security.md#chain-client-safety).
+
+## Installation
+
+```sh
+# Global installation (recommended)
+npm install --global @ccd-agent-kit/ccd-chain-client
+
+# Project-local installation
+npm install @ccd-agent-kit/ccd-chain-client
+```
+
+Node.js `>=22.23.4` is required. This package does not import the native PIV/PC/SC stack.
+
+## Setup
+
+This package has one binary, `ccd-chain-client-mcp`; there is no human transaction CLI.
+`--help` is its only command-line interface:
+
+```sh
+ccd-chain-client-mcp --help
+```
+
+Replace every `REPLACE_*` placeholder below before use. Examples assume commands are available
+on `PATH`; use the absolute executable paths shown in MCP host configuration.
+
+Built-in `mainnet` (the default) and `testnet` work without configuration. For shared custom-network
+configuration, follow the
+[config-manager network setup](https://github.com/Concordium/ccd-agent-kit/blob/main/packages/ccd-config-manager/README.md#network-selection).
+
+### Stdio
+
+Use the absolute executable path in the MCP host configuration:
+
+```json
+{
+  "mcpServers": {
+    "ccd-chain-client": {
+      "command": "/ABSOLUTE/PATH/TO/ccd-chain-client-mcp",
+      "env": {
+        "CCD_NETWORK": "REPLACE_NETWORK"
+      }
+    }
+  }
+}
+```
+
+For a project-local install, use
+`/ABSOLUTE/PATH/TO/PROJECT/node_modules/.bin/ccd-chain-client-mcp`. If the host supports `cwd`,
+the equivalent command is `npx` with `args: ["--no-install", "ccd-chain-client-mcp"]` and the
+absolute project directory as `cwd`.
+
+### Streamable HTTP
+
+```sh
+MCP_TRANSPORT=http \
+MCP_HTTP_PORT=3000 \
+MCP_HTTP_PATH=/mcp \
+CCD_NETWORK=REPLACE_NETWORK \
+ccd-chain-client-mcp
+```
+
+HTTP is stateless. The built-in listener has no authentication or TLS, sends permissive CORS
+headers, and has no bind-address setting. Do not expose it directly to an untrusted network;
+restrict it locally or place it behind an authenticated TLS reverse proxy. Stdio is safer for a
+local agent host.
+
+### Customisation
+
+Network state uses standard XDG roots in the `ccd-agent-kit` namespace:
+
+| Variable          | Default base     | Purpose                                 |
+| ----------------- | ---------------- | --------------------------------------- |
+| `XDG_CONFIG_HOME` | `~/.config`      | Network and chain-client configuration. |
+| `XDG_DATA_HOME`   | `~/.local/share` | Public labels and catalogs.             |
+| `XDG_STATE_HOME`  | `~/.local/state` | Cached account credentials and indexes. |
+
+If you override these roots, give config manager and the MCP host the same values. The server
+captures its default network and endpoint overrides at startup; restart after changing them.
+
+| Variable              | Meaning                                                          | Default             |
+| --------------------- | ---------------------------------------------------------------- | ------------------- |
+| `CCD_NETWORK`         | Configured name, bare CAIP-2 reference, or full `ccd:REFERENCE`. | Configured default. |
+| `CCD_GRPC_ENDPOINT`   | Default-network node as `host[:port]`.                           | Registry endpoint.  |
+| `CCD_GRPC_TLS`        | `true` or `false`.                                               | Registry TLS value. |
+| `CCD_GRPC_TIMEOUT_MS` | Positive request timeout in milliseconds.                        | `15000`.            |
+| `MCP_TRANSPORT`       | `stdio` or `http`.                                               | `stdio`.            |
+| `MCP_HTTP_PORT`       | HTTP port.                                                       | `3000`.             |
+| `MCP_HTTP_PATH`       | HTTP path beginning with `/`.                                    | `/mcp`.             |
+
+Startup refresh policy is persisted by config manager and may be overridden per process with
+`CCD_ACCOUNT_CREDENTIALS_STARTUP_REFRESH`,
+`CCD_ACCOUNT_CREDENTIALS_STARTUP_REFRESH_MAX_AGE`,
+`CCD_ACCOUNT_CREDENTIALS_STARTUP_REFRESH_FAILURE_RETRY`, and
+`CCD_ACCOUNT_CREDENTIALS_STARTUP_REFRESH_CONCURRENCY`. Refresh revisits only previously cached
+accounts, uses finalized chain state, and is non-fatal.
 
 ## MCP Tools
 
@@ -120,104 +216,6 @@ These Markdown resources are also available through the MCP Skills extension.
 | `skill://ccd-plt-transfer/SKILL.md`                   | How to transfer protocol-level tokens with MCP tools.                    |
 | `skill://ccd-sponsored-multisig-transaction/SKILL.md` | How to coordinate sponsored or multi-signature account transactions.     |
 
-## Installation
-
-Install the package from its project-specific GitHub Release asset. Follow
-[Installing Release Assets](https://github.com/Concordium/ccd-agent-kit/blob/main/docs/release.md#installing-release-assets)
-for checksum verification, installation, Node.js requirements, and release naming. This package
-does not import the native PIV/PC/SC stack. It includes the repository's
-[Apache License 2.0](https://github.com/Concordium/ccd-agent-kit/blob/main/LICENSE) as
-`LICENSE`.
-
-## Setup
-
-This package has one binary, `ccd-chain-client-mcp`; there is no human transaction CLI.
-`--help` is its only command-line interface:
-
-```sh
-ccd-chain-client-mcp --help
-```
-
-Replace every `REPLACE_*` placeholder below before use. Examples assume commands are available
-on `PATH`; use the absolute executable paths shown in MCP host configuration.
-
-Install `ccd-config-manager` separately to manage verified network entries. For a custom
-network:
-
-```sh
-ccd-config-manager network add \
-  --name REPLACE_NETWORK \
-  --grpc-host REPLACE_NODE_HOST \
-  --grpc-port REPLACE_NODE_PORT
-ccd-config-manager network doctor --name REPLACE_NETWORK
-ccd-config-manager network default set --name REPLACE_NETWORK
-```
-
-Network state uses standard XDG roots in the `ccd-agent-kit` namespace:
-
-| Variable          | Default base     | Purpose                                 |
-| ----------------- | ---------------- | --------------------------------------- |
-| `XDG_CONFIG_HOME` | `~/.config`      | Network and chain-client configuration. |
-| `XDG_DATA_HOME`   | `~/.local/share` | Public labels and catalogs.             |
-| `XDG_STATE_HOME`  | `~/.local/state` | Cached account credentials and indexes. |
-
-If you override these roots, give config manager and the MCP host the same values. The server
-captures its default network and endpoint overrides at startup; restart after changing them.
-
-| Variable              | Meaning                                                          | Default             |
-| --------------------- | ---------------------------------------------------------------- | ------------------- |
-| `CCD_NETWORK`         | Configured name, bare CAIP-2 reference, or full `ccd:REFERENCE`. | Configured default. |
-| `CCD_GRPC_ENDPOINT`   | Default-network node as `host[:port]`.                           | Registry endpoint.  |
-| `CCD_GRPC_TLS`        | `true` or `false`.                                               | Registry TLS value. |
-| `CCD_GRPC_TIMEOUT_MS` | Positive request timeout in milliseconds.                        | `15000`.            |
-| `MCP_TRANSPORT`       | `stdio` or `http`.                                               | `stdio`.            |
-| `MCP_HTTP_PORT`       | HTTP port.                                                       | `3000`.             |
-| `MCP_HTTP_PATH`       | HTTP path beginning with `/`.                                    | `/mcp`.             |
-
-Startup refresh policy is persisted by config manager and may be overridden per process with
-`CCD_ACCOUNT_CREDENTIALS_STARTUP_REFRESH`,
-`CCD_ACCOUNT_CREDENTIALS_STARTUP_REFRESH_MAX_AGE`,
-`CCD_ACCOUNT_CREDENTIALS_STARTUP_REFRESH_FAILURE_RETRY`, and
-`CCD_ACCOUNT_CREDENTIALS_STARTUP_REFRESH_CONCURRENCY`. Refresh revisits only previously cached
-accounts, uses finalized chain state, and is non-fatal.
-
-### Stdio
-
-Use the absolute executable path in the MCP host configuration:
-
-```json
-{
-  "mcpServers": {
-    "ccd-chain-client": {
-      "command": "/ABSOLUTE/PATH/TO/ccd-chain-client-mcp",
-      "env": {
-        "CCD_NETWORK": "REPLACE_NETWORK"
-      }
-    }
-  }
-}
-```
-
-For a project-local install, use
-`/ABSOLUTE/PATH/TO/PROJECT/node_modules/.bin/ccd-chain-client-mcp`. If the host supports `cwd`,
-the equivalent command is `npx` with `args: ["--no-install", "ccd-chain-client-mcp"]` and the
-absolute project directory as `cwd`.
-
-### Streamable HTTP
-
-```sh
-MCP_TRANSPORT=http \
-MCP_HTTP_PORT=3000 \
-MCP_HTTP_PATH=/mcp \
-CCD_NETWORK=REPLACE_NETWORK \
-ccd-chain-client-mcp
-```
-
-HTTP is stateless. The built-in listener has no authentication or TLS, sends permissive CORS
-headers, and has no bind-address setting. Do not expose it directly to an untrusted network;
-restrict it locally or place it behind an authenticated TLS reverse proxy. Stdio is safer for a
-local agent host.
-
 ## Safe Workflows
 
 ### Build, sign, and submit a transaction
@@ -261,3 +259,8 @@ not chain or signing authority.
 - Node failures expose a fixed safe message and, when available, a numeric node code. Unknown
   failures are sanitized.
 - MCP stdout is reserved for protocol frames; diagnostics go to stderr.
+
+## License
+
+The package includes the repository's
+[Apache License 2.0](https://github.com/Concordium/ccd-agent-kit/blob/main/LICENSE) as `LICENSE`.

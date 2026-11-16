@@ -68,7 +68,7 @@ const DEFAULT_NETWORKS: Record<string, NetworkConfig> = {
   testnet: {
     caip2: caip2FromGenesis(TESTNET_GENESIS_HASH),
     genesisHash: TESTNET_GENESIS_HASH,
-    grpc: { host: 'grpc.testnet.concordium.software', port: 20000, ssl: true },
+    grpc: { host: 'grpc.testnet.concordium.com', port: 20000, ssl: true },
   },
 };
 

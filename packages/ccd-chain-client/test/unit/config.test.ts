@@ -69,7 +69,7 @@ describe('parseConfig', () => {
     if (!result.ok) return;
     expect(result.value.network).toBe('testnet');
     expect(result.value.defaultNetworkSource).toBe('session');
-    expect(result.value.grpc.endpoint).toBe('grpc.testnet.concordium.software:20000');
+    expect(result.value.grpc.endpoint).toBe('grpc.testnet.concordium.com:20000');
   });
 
   it('selects networks by full CAIP-2 identifier', () => {
@@ -78,7 +78,7 @@ describe('parseConfig', () => {
     if (!result.ok) return;
     expect(result.value.network).toBe('testnet');
     expect(result.value.defaultNetworkSource).toBe('session');
-    expect(result.value.grpc.endpoint).toBe('grpc.testnet.concordium.software:20000');
+    expect(result.value.grpc.endpoint).toBe('grpc.testnet.concordium.com:20000');
   });
 
   it('honours an explicit endpoint override', () => {

@@ -107,9 +107,6 @@ export interface CredentialDeploymentSigningHandoffSummary {
 }
 
 const CREDENTIAL_COUNTER_LESS_THAN_MAX_ACCOUNTS_PROOF_LENGTH_BYTES = 740;
-// The signed deployment retains proofRegId (160 bytes) and the account-counter proof (740 bytes)
-// from the unsigned ID-ownership proof encoding; the target-bound key signatures sit between them.
-const SIGNED_CREDENTIAL_UNSIGNED_PROOF_SUFFIX_LENGTH_BYTES = 900;
 /** Serializes ID App account-opening credentials; requires distinct byte-sized key indexes and a valid key threshold. */
 export function buildAccountOpeningCredentialDeploymentHandoff(
   input: BuildAccountOpeningCredentialDeploymentHandoffInput,
@@ -582,13 +579,10 @@ function normalizeCredentialDeploymentSignatures(signatures: CredentialSignature
 }
 
 function buildSignedCredentialDeploymentProofs(unsignedProofs: Buffer, signatures: CredentialSignature): Buffer {
-  if (unsignedProofs.length < SIGNED_CREDENTIAL_UNSIGNED_PROOF_SUFFIX_LENGTH_BYTES) {
+  if (unsignedProofs.length <= CREDENTIAL_COUNTER_LESS_THAN_MAX_ACCOUNTS_PROOF_LENGTH_BYTES) {
     throw new Error('Credential deployment ownership proofs are too short.');
   }
-  const retainedProofs = unsignedProofs.subarray(
-    unsignedProofs.length - SIGNED_CREDENTIAL_UNSIGNED_PROOF_SUFFIX_LENGTH_BYTES,
-  );
-  const insertionOffset = retainedProofs.length - CREDENTIAL_COUNTER_LESS_THAN_MAX_ACCOUNTS_PROOF_LENGTH_BYTES;
+  const insertionOffset = unsignedProofs.length - CREDENTIAL_COUNTER_LESS_THAN_MAX_ACCOUNTS_PROOF_LENGTH_BYTES;
   const signatureBytes = Buffer.concat([
     Buffer.from([Object.keys(signatures).length]),
     ...Object.entries(signatures).map(([keyIndex, signature]) =>
@@ -596,8 +590,8 @@ function buildSignedCredentialDeploymentProofs(unsignedProofs: Buffer, signature
     ),
   ]);
   return Buffer.concat([
-    retainedProofs.subarray(0, insertionOffset),
+    unsignedProofs.subarray(0, insertionOffset),
     signatureBytes,
-    retainedProofs.subarray(insertionOffset),
+    unsignedProofs.subarray(insertionOffset),
   ]);
 }

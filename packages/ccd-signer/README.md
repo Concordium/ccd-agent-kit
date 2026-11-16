@@ -7,19 +7,183 @@ transactions.
 
 | Contents                              |
 | ------------------------------------- |
+| [Installation](#installation)         |
+| [Setup](#setup)                       |
 | [MCP tools](#mcp-tools)               |
 | [MCP resources](#mcp-resources)       |
 | [CLI usage](#cli-usage)               |
-| [Installation](#installation)         |
-| [Setup](#setup)                       |
 | [Common workflows](#common-workflows) |
 | [Troubleshooting](#troubleshooting)   |
+| [License](#license)                   |
 
 Provision keys, devices, labels, module policy, and finalized account-credential observations
 with `ccd-config-manager`. Query, complete, and explicitly submit artifacts with
 `ccd-chain-client`. See the canonical
 [architecture](https://github.com/Concordium/ccd-agent-kit/blob/main/docs/architecture.md#signer)
 and [security model](https://github.com/Concordium/ccd-agent-kit/blob/main/docs/security.md).
+
+## Installation
+
+```sh
+# Global installation (recommended)
+npm install --global @ccd-agent-kit/ccd-signer
+
+# Project-local installation
+npm install @ccd-agent-kit/ccd-signer
+```
+
+Node.js `>=22.23.4` is required. Installation includes native `pcsclite`, even for software-only
+signing, and therefore requires PC/SC development headers, `pkg-config`, and native build tools.
+Hardware-backed signing also requires a working PC/SC service and a standard, non-FIPS YubiKey 5
+Series with PIV enabled and firmware `>=5.7.4`, such as a YubiKey 5 NFC or 5C NFC with the required
+firmware. The device must support PIV Ed25519 algorithm `0xe0` in signing slot `9c` or a retired
+slot `82`-`95`; see the [YubiKey 5 PIV documentation](https://docs.yubico.com/hardware/yubikey/yk-tech-manual/yk5-apps-piv.html).
+Connect it over USB/CCID; FIDO-only Security Keys and Bio FIDO editions do not meet these
+requirements, and [YubiKey 5 FIPS PIV](https://docs.yubico.com/hardware/yubikey/yk-tech-manual/yk5-fips-piv.html)
+does not provide Ed25519. Check the model and firmware with `ykman info` (YubiKey Manager CLI).
+
+## Setup
+
+Replace every `REPLACE_*` placeholder below before use. Examples assume commands are available
+on `PATH`; from a project-local installation, use `npx --no-install`.
+
+Install `ccd-config-manager` separately. Built-in `mainnet` and `testnet` are already available.
+For a custom network, follow
+[config-manager network setup](https://github.com/Concordium/ccd-agent-kit/blob/main/packages/ccd-config-manager/README.md#network-selection)
+and replace `REPLACE_NETWORK` accordingly. Network selection precedence remains explicit
+`--network`, then `CCD_NETWORK`, then the configured default.
+
+### To store signing keys in encrypted files
+
+1. **Initialize encrypted storage.** (Skip this if it is already initialized.)
+
+   The password is read from a hidden prompt, never from an argument or environment variable.
+
+   ```sh
+   ccd-config-manager storage init --storage encrypted-file
+   ```
+
+   The software signer and encrypted-file storage are enabled by default; re-enable them only if
+   previously disabled.
+
+2. Choose one way to catalog a key:
+
+   (a) **Generate a fresh software key.** It remains in encrypted storage.
+
+   ```sh
+   ccd-config-manager signing-key generate --backend software --label REPLACE_KEY_LABEL
+   ```
+
+   (b) **Import an existing key from a wallet export.** Use a supported wallet export and protect the source file: it
+   contains plaintext private keys. Importing does not bind the key to an account.
+
+   ```sh
+   ccd-config-manager signing-key import --backend software \
+     --file /ABSOLUTE/PATH/TO/REPLACE_WALLET_EXPORT.json \
+     --label REPLACE_KEY_LABEL
+   ```
+
+   (c) **Import an existing key by pasting.** The tool will prompt for the key. Importing does not bind the key to an account.
+
+   ```sh
+   ccd-config-manager signing-key import --backend software \
+     --label REPLACE_KEY_LABEL
+   ```
+
+3. **Unlock the running signer.** After starting the MCP host, unlock its software storage through
+   the signer instance service as described in [Troubleshooting](#troubleshooting).
+
+### YubiKey PIV key
+
+1. **Prepare YubiKey PIV.** Use a supported Ed25519-capable YubiKey with working PC/SC and PIV.
+   Before real use, use YubiKey tooling to set and securely store a non-default PIN, PUK, and
+   management key. This application does not reset the device. PIN and management-key entry uses
+   hidden prompts, never arguments or environment variables. The `yubikey-piv` signer is enabled
+   by default; re-enable it only if previously disabled.
+
+2. **Register the device.** Find its decimal serial and assign a local name; skip if already
+   registered.
+
+   ```sh
+   ccd-config-manager device list
+   ccd-config-manager device register --name REPLACE_DEVICE_NAME --serial REPLACE_DECIMAL_SERIAL
+   ```
+
+3. Choose one way to catalog the key:
+
+   (a) **Generate a new key.** Use Ed25519 signing slot `9c` and PIN policy `once`.
+
+   ```sh
+   ccd-config-manager signing-key generate --backend yubikey-piv \
+     --device REPLACE_DEVICE_NAME --slot 9c --pin-policy once \
+     --label REPLACE_KEY_LABEL
+   ```
+
+   (b) **Adopt an existing key.** If slot `9c` already contains the intended key, adopt it and
+   verify the exact `TRUST` fingerprint prompt. Adoption does not overwrite, reset, or force the
+   slot.
+
+   ```sh
+   ccd-config-manager signing-key adopt --backend yubikey-piv \
+     --device REPLACE_DEVICE_NAME --slot 9c --label REPLACE_KEY_LABEL
+   ```
+
+   Slot `9c` is distinct from the P-256 identity root in slot `9d`. YubiKey Ed25519 keys may also
+   use retired slots `82`-`95`, though generic PIV device support varies.
+
+4. **Unlock the device locally.** Run
+   `ccd-config-manager device unlock --device REPLACE_DEVICE_NAME` and enter the hidden PIN prompt.
+
+   With `--pin-policy once`, unlock again after a device reset or removal. MCP accepts no PIN;
+   touch is required only if configured.
+
+### Account readiness
+
+For an existing account, both custody types also require:
+
+```sh
+ccd-config-manager account credentials refresh \
+  --address REPLACE_ACCOUNT_ADDRESS \
+  --network REPLACE_NETWORK
+```
+
+A fresh key gains no authority over an existing account; provision it during account opening or an
+on-chain credential/key change. `ccd-config-manager signing-key list` or `ccd-signer list-keys`
+checks public inventory, not end-to-end signing readiness.
+
+### MCP launch configuration
+
+`ccd-signer-mcp` is stdio-only. Use the absolute executable path in the MCP host configuration:
+
+```json
+{
+  "mcpServers": {
+    "ccd-signer": {
+      "command": "/ABSOLUTE/PATH/TO/ccd-signer-mcp",
+      "env": {
+        "CCD_NETWORK": "REPLACE_NETWORK"
+      }
+    }
+  }
+}
+```
+
+For a project-local install, use `/ABSOLUTE/PATH/TO/PROJECT/node_modules/.bin/ccd-signer-mcp`.
+If the host supports `cwd`, the equivalent command is `npx` with
+`args: ["--no-install", "ccd-signer-mcp"]` and the absolute project directory as `cwd`.
+
+### Customisation
+
+Signer reads shared XDG state under `ccd-agent-kit`.
+
+| Variable          | Default base           | Purpose                                         |
+| ----------------- | ---------------------- | ----------------------------------------------- |
+| `XDG_CONFIG_HOME` | `~/.config`            | Configuration.                                  |
+| `XDG_DATA_HOME`   | `~/.local/share`       | Persistent catalogs and protected key material. |
+| `XDG_STATE_HOME`  | `~/.local/state`       | Cached credentials and operational state.       |
+| `XDG_RUNTIME_DIR` | Under state when unset | Local MCP instance control.                     |
+
+If you override these roots, give config manager, signer CLI, and the MCP host the same values.
 
 ## MCP Tools
 
@@ -99,81 +263,6 @@ does not fetch them. Message input is exactly one of UTF-8 text or exact hex and
 leaf command's `--help` for exact JSON shapes and selection controls.
 CLI help is available only through `-h` and `--help`; there is no help subcommand or help alias.
 
-## Installation
-
-Install the package from its project-specific GitHub Release asset. Follow
-[Installing Release Assets](https://github.com/Concordium/ccd-agent-kit/blob/main/docs/release.md#installing-release-assets)
-for checksum verification, installation, Node.js and native PC/SC prerequisites, and release
-naming. Installation includes native `pcsclite`, even for software-only signing, and therefore
-requires PC/SC development headers, `pkg-config`, and native build tools. Hardware-backed signing
-also requires a working PC/SC service and supported device. The package includes the repository's
-[Apache License 2.0](https://github.com/Concordium/ccd-agent-kit/blob/main/LICENSE) as
-`LICENSE`.
-
-## Setup
-
-Signer reads shared XDG state under `ccd-agent-kit`. Network selection is explicit `--network`,
-then `CCD_NETWORK`, then the configured default.
-
-Replace every `REPLACE_*` placeholder below before use. Examples assume commands are available
-on `PATH`; from a project-local installation, use `npx --no-install`.
-
-| Variable          | Default base           | Purpose                                         |
-| ----------------- | ---------------------- | ----------------------------------------------- |
-| `XDG_CONFIG_HOME` | `~/.config`            | Configuration.                                  |
-| `XDG_DATA_HOME`   | `~/.local/share`       | Persistent catalogs and protected key material. |
-| `XDG_STATE_HOME`  | `~/.local/state`       | Cached credentials and operational state.       |
-| `XDG_RUNTIME_DIR` | Under state when unset | Local MCP instance control.                     |
-
-If you override these roots, give config manager, signer CLI, and the MCP host the same values.
-Install `ccd-config-manager` separately and configure at least one backend. This software-key
-example adds a custom network; use `mainnet` or `testnet` instead if already configured.
-
-```sh
-ccd-config-manager network add \
-  --name REPLACE_NETWORK \
-  --grpc-host REPLACE_NODE_HOST \
-  --grpc-port REPLACE_NODE_PORT
-ccd-config-manager network doctor --name REPLACE_NETWORK
-ccd-config-manager network default set --name REPLACE_NETWORK
-ccd-config-manager storage init --storage encrypted-file
-ccd-config-manager service signer module enable --module software-signer
-ccd-config-manager signing-key import --backend software \
-  --file /ABSOLUTE/PATH/TO/REPLACE_WALLET_EXPORT.json \
-  --label REPLACE_KEY_LABEL
-ccd-config-manager account credentials refresh \
-  --address REPLACE_ACCOUNT_ADDRESS \
-  --network REPLACE_NETWORK
-```
-
-For a new software key, replace the import command with `ccd-config-manager signing-key generate
---backend software --label REPLACE_KEY_LABEL`. It writes only to encrypted-file storage and emits
-no private key or intermediate key file.
-
-For YubiKey custody, register and provision the device with `ccd-config-manager`, then enable
-`yubikey-piv` with `ccd-config-manager service signer module enable --module yubikey-piv`.
-
-### MCP launch configuration
-
-`ccd-signer-mcp` is stdio-only. Use the absolute executable path in the MCP host configuration:
-
-```json
-{
-  "mcpServers": {
-    "ccd-signer": {
-      "command": "/ABSOLUTE/PATH/TO/ccd-signer-mcp",
-      "env": {
-        "CCD_NETWORK": "REPLACE_NETWORK"
-      }
-    }
-  }
-}
-```
-
-For a project-local install, use `/ABSOLUTE/PATH/TO/PROJECT/node_modules/.bin/ccd-signer-mcp`.
-If the host supports `cwd`, the equivalent command is `npx` with
-`args: ["--no-install", "ccd-signer-mcp"]` and the absolute project directory as `cwd`.
-
 ## Common Workflows
 
 ### Transaction signing
@@ -199,7 +288,8 @@ network, account, attributes, artifact, and effect before each sensitive step.
 Encrypted software storage is process-locked at MCP startup. Control it through authenticated
 local config-manager commands; passwords never enter MCP inputs. See the canonical
 [encrypted software-key storage design](https://github.com/Concordium/ccd-agent-kit/blob/main/docs/architecture.md#encrypted-software-key-storage)
-for format, backup, password-change, and memory-clearing limits.
+for format, backing up encrypted state and key files together, password-change, and memory-clearing
+limits.
 
 ```sh
 ccd-config-manager service signer instances
@@ -215,3 +305,8 @@ software-signer`, `ccd-signer list-keys`, account credential refresh, and softwa
 - On PC/SC failure, verify the service, device visibility, native prerequisites, and that
   `pcsclite` was built for the active Node version.
 - MCP stdout is protocol-only; startup and transport diagnostics go to stderr.
+
+## License
+
+The package includes the repository's
+[Apache License 2.0](https://github.com/Concordium/ccd-agent-kit/blob/main/LICENSE) as `LICENSE`.

@@ -54,6 +54,9 @@ Pull requests cannot release. Every push to `main` runs full `pnpm verify`; only
 verification permits the automatic release job to calculate versions, package affected public
 projects, create project tags and GitHub Releases, and upload assets.
 
+Same-repository PR checks update one “Expected versions based on commits in this PR” comment for
+configured release targets. Nx uses preserved commits; estimates may change as the target advances.
+
 ## GitHub Release Assets
 
 Each affected public project receives one npm-installable package tarball and one checksum:
