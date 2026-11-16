@@ -10,7 +10,8 @@ Harnesses with MCP Skills extension support should use the skills served directl
 | ------------------------------------------------- |
 | [Included skills](#included-skills)               |
 | [Installation and setup](#installation-and-setup) |
-| [Source and license](#source-and-license)         |
+| [Source](#source)                                 |
+| [License](#license)                               |
 
 ## Included Skills
 
@@ -34,20 +35,26 @@ tools and resources and the authority required by those operations.
 
 ## Installation And Setup
 
-Follow
-[Installing Release Assets](https://github.com/Concordium/ccd-agent-kit/blob/main/docs/release.md#installing-release-assets)
-for checksum verification and installation of the `ccd-skills` release tarball.
+```sh
+# Global installation (recommended)
+npm install --global @ccd-agent-kit/ccd-skills
 
-Copy or symlink the desired directories from `skills/` into the skill directory configured for
-your harness, following that harness's discovery instructions. Installing the npm package alone
-does not register the skills with a harness.
+# Project-local installation
+npm install @ccd-agent-kit/ccd-skills
+```
 
-## Source And License
+Copy or symlink the desired directories from the installed package's `skills/` directory into
+the skill directory configured for your harness, following that harness's discovery instructions.
+Installing the npm package alone does not automatically register the skills with a harness.
+
+## Source
 
 The packaged skills are generated from the same JSON catalogs and Markdown sources used by the
 servers. See the canonical
 [architecture](https://github.com/Concordium/ccd-agent-kit/blob/main/docs/architecture.md#skill-assets-and-catalogs)
 for source ownership, naming, build, and release contracts.
+
+## License
 
 The package includes the repository's
 [Apache License 2.0](https://github.com/Concordium/ccd-agent-kit/blob/main/LICENSE) as `LICENSE`.

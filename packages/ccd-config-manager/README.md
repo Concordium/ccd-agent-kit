@@ -11,113 +11,37 @@ objects, and `ccd-chain-client` owns node queries and submission. See the canoni
 
 | Contents                                          |
 | ------------------------------------------------- |
-| [CLI commands](#cli-commands)                     |
-| [CLI usage](#cli-usage)                           |
 | [Installation](#installation)                     |
 | [Setup](#setup)                                   |
+| [CLI commands](#cli-commands)                     |
+| [CLI usage](#cli-usage)                           |
 | [Safety and diagnostics](#safety-and-diagnostics) |
-
-## CLI Commands
-
-| Object              | Subcommands                                                                                                    |
-| ------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `signing-key`       | `list`, `inspect`, `generate`, `import`, `adopt`, `forget`, `label`, `locations`, `backend`                    |
-| `identity-root`     | `list`, `inspect`, `generate`, `import`, `adopt`, `forget`, `label`, `default`, `backend`, `locations`         |
-| `storage`           | `list`, `inspect`, `init`, `enable`, `disable`, `change-password`, `integrity`                                 |
-| `device`            | `list`, `inspect`, `register`, `rename`, `unregister`, `pin-status`, `unlock`, `lock`, `defaults`, `integrity` |
-| `account`           | `label list`, `inspect`, `find`, `set`, `remove`; `credentials list`, `inspect`, `refresh`, `remove`           |
-| `contract-instance` | `label list`, `inspect`, `find`, `set`, `remove`                                                               |
-| `network`           | `list`, `inspect`, `add`, `update`, `remove`, `default show`, `default set`, `doctor`                          |
-| `service`           | Signer/identity-manager instances and module policy; chain-client settings; signer lock control                |
-| `paths`             | Print shared configuration, state, and signer data paths.                                                      |
-
-Run `ccd-config-manager --help` for the current command catalog or
-`ccd-config-manager COMMAND --help` for a command's subcommands and options.
-Help is available only through `-h` and `--help`; the command tree has no help subcommand or help
-alias.
-
-## CLI Usage
-
-Signing-key and identity-root `list` commands show identifiers, labels, backend IDs, and default
-status where applicable; `inspect` shows the full record and custody locations.
-
-Replace every `REPLACE_*` placeholder before use. Examples assume commands are available on
-`PATH`; from a project-local installation, use `npx --no-install`.
-
-```sh
-ccd-config-manager --help
-
-# Protected operator labels (new labels default to hard)
-ccd-config-manager account label set \
-  --address REPLACE_ACCOUNT_ADDRESS \
-  --label REPLACE_ACCOUNT_LABEL \
-  --network REPLACE_NETWORK
-ccd-config-manager contract-instance label set \
-  --address REPLACE_INDEX,REPLACE_SUBINDEX \
-  --label REPLACE_CONTRACT_LABEL \
-  --network REPLACE_NETWORK
-
-# Runtime discovery and encrypted software-store lock state
-ccd-config-manager service signer instances
-ccd-config-manager service signer unlock --instance REPLACE_INSTANCE_ID
-ccd-config-manager service signer lock --instance REPLACE_INSTANCE_ID
-ccd-config-manager service id-manager instances
-
-# Chain-client startup cache policy
-ccd-config-manager service chain-client startup-refresh set \
-  --enabled true --max-age 24h --failure-retry 5m --concurrency 3
-ccd-config-manager service chain-client inspect
-```
-
-Hard labels are operator-protected. Agent-facing servers can only create, replace, or remove soft
-labels in their own domains. Labels are metadata, never signing or custody authority.
-
-This is an object-first tree with no compatibility aliases for the former `software`, `yubikey`,
-`account-label`, `account-credentials`, `signer`, `id-manager`, or `chain-client` paths. Provisioning
-uses required `--backend software|yubikey-piv`; catalog location operations instead use persisted
-backend IDs (`software-signer|yubikey-piv`). Software storage uses the separate
-`--storage encrypted-file` selector where a storage target is required.
-
-After covered catalog or policy changes, config manager best-effort refreshes active signer or
-identity-manager instances. Restart the affected process if the new state is not observed.
-Runtime module status reports persisted policy, not key or hardware readiness.
+| [License](#license)                               |
 
 ## Installation
 
-Install the package from its project-specific GitHub Release asset. Follow
-[Installing Release Assets](https://github.com/Concordium/ccd-agent-kit/blob/main/docs/release.md#installing-release-assets)
-for checksum verification and installation. Node.js `>=22.23.4` is required.
+```sh
+# Global installation (recommended)
+npm install --global @ccd-agent-kit/ccd-config-manager
+
+# Project-local installation
+npm install @ccd-agent-kit/ccd-config-manager
+```
+
+Node.js `>=22.23.4` is required.
 
 Installation includes the native `pcsclite` dependency, even for software-key use, and therefore
 requires PC/SC development headers, `pkg-config`, and a native build toolchain. On Debian/Ubuntu,
 install `libpcsclite-dev pkg-config python3 make g++` before installing the package. Hardware
-operations also require a working PC/SC service and a supported device. The package includes the
-repository's [Apache License 2.0](https://github.com/Concordium/ccd-agent-kit/blob/main/LICENSE) as
-`LICENSE`.
+operations also require a working PC/SC service and a supported device.
 
 ## Setup
 
-### State and network selection
-
-State is stored below the standard XDG roots in one `ccd-agent-kit` namespace:
-
-```text
-$XDG_CONFIG_HOME/ccd-agent-kit/  (default: ~/.config/ccd-agent-kit/)
-$XDG_DATA_HOME/ccd-agent-kit/    (default: ~/.local/share/ccd-agent-kit/)
-$XDG_STATE_HOME/ccd-agent-kit/   (default: ~/.local/state/ccd-agent-kit/)
-$XDG_RUNTIME_DIR/ccd-agent-kit/  (runtime instance control when set)
-```
-
-Set the XDG variables to base directories, without the `ccd-agent-kit` suffix. Give all companion
-tools and their hosts the same values when overriding them; GUI hosts may need explicit `env`
-entries. Runtime instance control falls back under state when `XDG_RUNTIME_DIR` is unset.
-
-Protected paths reject unsafe permissions and symlinks. `paths` is a local diagnostic that can
-reveal sensitive locations; do not publish its output.
+### Network selection
 
 Network-aware commands use an explicit selector, then `CCD_NETWORK`, then the persisted default.
 A selector can be a configured name, bare 32-hex CAIP-2 reference, or full `ccd:REFERENCE`.
-Create and test an operator network first:
+Built-in `mainnet` (the default) and `testnet` need no setup. To register and test a custom network:
 
 ```sh
 ccd-config-manager network add \
@@ -233,7 +157,90 @@ ccd-config-manager identity-root list
 To trust a root already in slot `9d`, use `identity-root adopt --backend yubikey-piv --device
 REPLACE_DEVICE_NAME --label REPLACE_SOURCE_LABEL` and verify the exact fingerprint prompt. No
 software identity-root backend exists. Continue with the
-[`ccd-id-manager` provider setup](https://github.com/Concordium/ccd-agent-kit/blob/main/packages/ccd-id-manager/README.md#configure-an-identity-provider).
+[`ccd-id-manager` provider setup](https://github.com/Concordium/ccd-agent-kit/blob/main/packages/ccd-id-manager/README.md#configuring-identity-providers).
+
+### Customisation
+
+State is stored below the standard XDG roots in one `ccd-agent-kit` namespace:
+
+```text
+$XDG_CONFIG_HOME/ccd-agent-kit/  (default: ~/.config/ccd-agent-kit/)
+$XDG_DATA_HOME/ccd-agent-kit/    (default: ~/.local/share/ccd-agent-kit/)
+$XDG_STATE_HOME/ccd-agent-kit/   (default: ~/.local/state/ccd-agent-kit/)
+$XDG_RUNTIME_DIR/ccd-agent-kit/  (runtime instance control when set)
+```
+
+Set the XDG variables to base directories, without the `ccd-agent-kit` suffix. Give all companion
+tools and their hosts the same values when overriding them; GUI hosts may need explicit `env`
+entries. Runtime instance control falls back under state when `XDG_RUNTIME_DIR` is unset.
+
+Protected paths reject unsafe permissions and symlinks. `paths` is a local diagnostic that can
+reveal sensitive locations; do not publish its output.
+
+## CLI Commands
+
+| Object              | Subcommands                                                                                                    |
+| ------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `signing-key`       | `list`, `inspect`, `generate`, `import`, `adopt`, `forget`, `label`, `locations`, `backend`                    |
+| `identity-root`     | `list`, `inspect`, `generate`, `import`, `adopt`, `forget`, `label`, `default`, `backend`, `locations`         |
+| `storage`           | `list`, `inspect`, `init`, `enable`, `disable`, `change-password`, `integrity`                                 |
+| `device`            | `list`, `inspect`, `register`, `rename`, `unregister`, `pin-status`, `unlock`, `lock`, `defaults`, `integrity` |
+| `account`           | `label list`, `inspect`, `find`, `set`, `remove`; `credentials list`, `inspect`, `refresh`, `remove`           |
+| `contract-instance` | `label list`, `inspect`, `find`, `set`, `remove`                                                               |
+| `network`           | `list`, `inspect`, `add`, `update`, `remove`, `default show`, `default set`, `doctor`                          |
+| `service`           | Signer/identity-manager instances and module policy; chain-client settings; signer lock control                |
+| `paths`             | Print shared configuration, state, and signer data paths.                                                      |
+
+Run `ccd-config-manager --help` for the current command catalog or
+`ccd-config-manager COMMAND --help` for a command's subcommands and options.
+Help is available only through `-h` and `--help`; the command tree has no help subcommand or help
+alias.
+
+## CLI Usage
+
+Signing-key and identity-root `list` commands show identifiers, labels, backend IDs, and default
+status where applicable; `inspect` shows the full record and custody locations.
+
+Replace every `REPLACE_*` placeholder before use. Examples assume commands are available on
+`PATH`; from a project-local installation, use `npx --no-install`.
+
+```sh
+ccd-config-manager --help
+
+# Protected operator labels (new labels default to hard)
+ccd-config-manager account label set \
+  --address REPLACE_ACCOUNT_ADDRESS \
+  --label REPLACE_ACCOUNT_LABEL \
+  --network REPLACE_NETWORK
+ccd-config-manager contract-instance label set \
+  --address REPLACE_INDEX,REPLACE_SUBINDEX \
+  --label REPLACE_CONTRACT_LABEL \
+  --network REPLACE_NETWORK
+
+# Runtime discovery and encrypted software-store lock state
+ccd-config-manager service signer instances
+ccd-config-manager service signer unlock --instance REPLACE_INSTANCE_ID
+ccd-config-manager service signer lock --instance REPLACE_INSTANCE_ID
+ccd-config-manager service id-manager instances
+
+# Chain-client startup cache policy
+ccd-config-manager service chain-client startup-refresh set \
+  --enabled true --max-age 24h --failure-retry 5m --concurrency 3
+ccd-config-manager service chain-client inspect
+```
+
+Hard labels are operator-protected. Agent-facing servers can only create, replace, or remove soft
+labels in their own domains. Labels are metadata, never signing or custody authority.
+
+This is an object-first tree with no compatibility aliases for the former `software`, `yubikey`,
+`account-label`, `account-credentials`, `signer`, `id-manager`, or `chain-client` paths. Provisioning
+uses required `--backend software|yubikey-piv`; catalog location operations instead use persisted
+backend IDs (`software-signer|yubikey-piv`). Software storage uses the separate
+`--storage encrypted-file` selector where a storage target is required.
+
+After covered catalog or policy changes, config manager best-effort refreshes active signer or
+identity-manager instances. Restart the affected process if the new state is not observed.
+Runtime module status reports persisted policy, not key or hardware readiness.
 
 ## Safety And Diagnostics
 
@@ -254,3 +261,8 @@ software identity-root backend exists. Continue with the
   version.
 - If a network operation fails, run `network list`, `network doctor --name REPLACE_NETWORK`, and
   verify `CCD_NETWORK` is not overriding the intended default.
+
+## License
+
+The package includes the repository's
+[Apache License 2.0](https://github.com/Concordium/ccd-agent-kit/blob/main/LICENSE) as `LICENSE`.

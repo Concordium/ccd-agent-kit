@@ -12,6 +12,10 @@ permissions:
   contents: read
   pull-requests: read
 
+concurrency:
+  group: pr-checks-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   semantic-pr-title:
     runs-on: ubuntu-latest
@@ -34,6 +38,10 @@ jobs:
             revert
 
   conventional-commits:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    permissions:
+      contents: read
+      pull-requests: write
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -57,3 +65,10 @@ jobs:
           PR_BASE: ${{ github.event.pull_request.base.sha }}
           PR_HEAD: ${{ github.event.pull_request.head.sha }}
         run: pnpm lint:commits --from "$PR_BASE" --to "$PR_HEAD"
+
+      - name: Preview release versions
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const { previewRelease } = await import(`${process.env.GITHUB_WORKSPACE}/scripts/pr-release-preview.mjs`);
+            await previewRelease({ github, context });

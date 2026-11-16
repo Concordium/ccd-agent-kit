@@ -50,13 +50,13 @@ export const signTransactionInputSchema = z
     keys: z
       .array(z.string())
       .optional()
-      .describe('Optional exact credential/key pairs to sign, such as ["0:0", "0:1"].'),
+      .describe('Optional exact credential/key pairs to sign, such as ["0:0", "0:1"]. Cannot be combined with maxSignatures.'),
     maxSignatures: z
       .number()
       .int()
       .positive()
       .optional()
-      .describe('Optional maximum number of available missing keys to sign when keys is omitted. Defaults to 1.'),
+      .describe('Optional maximum number of available missing keys to sign when keys is omitted. Defaults to 1. Cannot be combined with keys.'),
     signatureRequirements: signatureRequirementsSchema
       .optional()
       .describe('Optional builder-compatible signature requirements metadata.'),
@@ -111,13 +111,13 @@ export const signCredentialDeploymentInputSchema = z
     keys: z
       .array(z.string().regex(/^\d+$/))
       .optional()
-      .describe('Optional exact credential key indexes to sign, such as ["0", "1"].'),
+      .describe('Optional exact credential key indexes to sign, such as ["0", "1"]. Cannot be combined with maxSignatures.'),
     maxSignatures: z
       .number()
       .int()
       .positive()
       .optional()
-      .describe('Optional maximum number of available missing keys to sign when keys is omitted. Defaults to 1.'),
+      .describe('Optional maximum number of available missing keys to sign when keys is omitted. Defaults to 1. Cannot be combined with keys.'),
     network: z
       .string()
       .optional()
