@@ -126,9 +126,10 @@ tools and resources those workflows require.
 
 Automatic release accepts only `main`. It asks Nx to calculate and apply independent versions in
 the CI workspace without committing manifest changes, builds and stages each selected public
-project, runs `npm pack`, and computes the checksum. Nx then creates project tags and GitHub
-Releases, after which the release script uploads the tarball and checksum. Missing artifacts,
-mapping mismatches, or upload failures fail the job. Artifact mapping and staging are keyed by the
+project, runs `npm pack`, and computes the checksum. Nx then creates annotated project tags for all
+versioned projects and GitHub Releases only for public packages, after which the release script
+uploads the tarball and checksum. Missing artifacts, mapping mismatches, or upload failures fail the
+job. Artifact mapping and staging are keyed by the
 unscoped `projectName`; validation binds each selected project to its scoped npm manifest name.
 Dry-run performs version calculation only.
 

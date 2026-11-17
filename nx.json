@@ -38,7 +38,17 @@
     }
   },
   "release": {
-    "projects": ["packages/*"],
+    "groups": {
+      "public": {
+        "projects": ["ccd-*"]
+      },
+      "private": {
+        "projects": ["libs/*"],
+        "changelog": {
+          "createRelease": false
+        }
+      }
+    },
     "projectsRelationship": "independent",
     "releaseTag": {
       "pattern": "{projectName}/v{version}",

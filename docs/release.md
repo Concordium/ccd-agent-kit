@@ -25,8 +25,8 @@ Public Nx project names are `ccd-signer`, `ccd-chain-client`, `ccd-config-manage
 `@ccd-agent-kit/ccd-signer`, `@ccd-agent-kit/ccd-chain-client`,
 `@ccd-agent-kit/ccd-config-manager`, `@ccd-agent-kit/ccd-id-manager`, and
 `@ccd-agent-kit/ccd-skills`. Public/private classification uses the explicit private flag and
-workspace identity, not npm scope. Private shared packages are independently versioned but are
-never published.
+workspace identity, not npm scope. Private shared packages are independently versioned and receive
+annotated project tags, but are never published and do not receive GitHub Releases.
 
 ## Release Channel
 

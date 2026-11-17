@@ -41,7 +41,7 @@ export function createDistributionManifest(sourceManifest, externalDependencies)
     dependencies[name] = version;
   }
   const manifest = {};
-  for (const key of ['name', 'version', 'description', 'type']) {
+  for (const key of ['name', 'version', 'description', 'type', 'repository', 'homepage', 'bugs']) {
     if (sourceManifest[key] !== undefined) manifest[key] = sourceManifest[key];
   }
   manifest.license = 'Apache-2.0';
