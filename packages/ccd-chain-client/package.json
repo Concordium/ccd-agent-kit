@@ -45,7 +45,7 @@
     "@ccd-agent-kit/mcp-utils": "workspace:*",
     "@ccd-agent-kit/sdk-utils": "workspace:*",
     "@concordium/web-sdk": "13.0.0-alpha.2",
-    "@grpc/grpc-js": "^1.14.4",
+    "@grpc/grpc-js": "^1.14.7",
     "@modelcontextprotocol/node": "^2.1.0",
     "@modelcontextprotocol/server": "^2.4.0",
     "zod": "^4.6.7"

@@ -36,7 +36,7 @@
     "@ccd-agent-kit/piv-utils": "workspace:*",
     "@ccd-agent-kit/sdk-utils": "workspace:*",
     "@concordium/web-sdk": "13.0.0-alpha.2",
-    "@grpc/grpc-js": "^1.14.4",
+    "@grpc/grpc-js": "^1.14.7",
     "commander": "^15.1.0",
     "zod": "^4.6.7"
   },
