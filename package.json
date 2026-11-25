@@ -38,7 +38,7 @@
     "@types/node": "^22.0.0",
     "@vitest/coverage-v8": "^4.1.10",
     "esbuild": "0.28.2",
-    "eslint": "^10.8.1",
+    "eslint": "^10.15.0",
     "nx": "^22.0.0",
     "prettier": "^3.10.1",
     "typescript": "^6.0.3",
